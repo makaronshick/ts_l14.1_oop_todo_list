@@ -1,6 +1,16 @@
 type TodoStatus = 'pending' | 'completed';
 
-class TodoItem {
+interface ITodoItem {
+  readonly id: number;
+  title: string;
+  content: string;
+  readonly createdAt: Date;
+  updatedAt: Date;
+  status: TodoStatus;
+  getInfo(): string;
+}
+
+class TodoItem implements ITodoItem {
   private static idCounter = 0;
   readonly id: number;
   title: string;
@@ -43,35 +53,53 @@ class TodoItem {
   }
 }
 
-
 class ConfirmedTodoItem extends TodoItem {
-  confirmEditAction(action: string): boolean {
-    // return confirm(`Are you shure to ${action} this item?`); // stub method
-    return true;
+  public confirm: boolean;
+
+  constructor(title: string, content: string) {
+    super(title, content);
+    this.confirm = false;
   }
 
-  confirmDeleteAction(action: string): boolean {
-    // return confirm(`Are you shure to ${action} this item?`); // stub method
-    return true;
+  isConfirmed(): boolean {
+    return this.confirm;
   }
 
   override edit(title: string, content: string): void {
-    if (this.confirmEditAction('edit')) {
+    if (this.isConfirmed()) {
       super.edit(title, content);
     }
   }
 
+  canBeEdited(): boolean {
+    return this.isConfirmed();
+  }
+
   canBeDeleted(): boolean {
-    return this.confirmDeleteAction('delete');
+    return this.isConfirmed();
   }
 }
 
-
 class TodoList {
-  private items: TodoItem[] = [];
+  private items: ITodoItem[] = [];
 
-  add(item: TodoItem): void {
+  add(item: ITodoItem): void {
     this.items.push(item);
+  }
+
+  edit(id: number, title: string, content: string): void {
+    const index = this.items.findIndex(item => item.id === id);
+    if (index !== -1) {
+      const item = this.items[index];
+      if (item instanceof ConfirmedTodoItem && !item.canBeEdited()) {
+        return;
+      }
+      if (item instanceof TodoItem) {
+        item.edit(title, content);
+      }
+    } else {
+      console.warn(`Item with ID ${id} not found for edit`);
+    }
   }
 
   remove(id: number): void {
@@ -83,11 +111,11 @@ class TodoList {
       }
       this.items.splice(index, 1);
     } else {
-      console.warn(`Item with ID ${id} not found`);
+      console.warn(`Item with ID ${id} not found for delete`);
     }
   }
 
-  getAll(): TodoItem[] {
+  getAll(): ITodoItem[] {
     return this.items;
   }
 
@@ -97,7 +125,7 @@ class TodoList {
     return { total: this.items.length, pending, completed };
   }
 
-  search(query: string): TodoItem[] {
+  search(query: string): ITodoItem[] {
     const lowerQuery = query.toLowerCase();
     return this.items.filter(
       item =>
@@ -106,13 +134,13 @@ class TodoList {
     );
   }
 
-  sortByStatus(): TodoItem[] {
+  sortByStatus(): ITodoItem[] {
     return [...this.items].sort((a, b) =>
       a.status.localeCompare(b.status)
     );
   }
 
-  sortByCreationDate(): TodoItem[] {
+  sortByCreationDate(): ITodoItem[] {
     return [...this.items].sort((a, b) =>
       a.createdAt.getTime() - b.createdAt.getTime()
     );
@@ -123,27 +151,41 @@ class TodoList {
 const todoList = new TodoList();
 
 const task1 = new TodoItem('Buy products', 'Bread, milk, cheese');
-const task2 = new ConfirmedTodoItem('Prepare the report', 'Financial report for the month');
-const task3 = new TodoItem('Do home work', 'Type script lesson 14');
+const task2 = new TodoItem('Do home work', 'Type script lesson 14');
+const task3 = new ConfirmedTodoItem('Prepare the report', 'Financial report for the month');
+const task4 = new ConfirmedTodoItem('Open bank account', 'Need to open account in Privat Bank');
 
 todoList.add(task1);
 todoList.add(task2);
 todoList.add(task3);
-console.log('todoList: ', todoList);
+todoList.add(task4);
+console.log('todoList: ', todoList); // 4 items
 
-task1.edit('Buy products', 'Bread, apples');
+task1.edit('Buy products', 'Bread, apples'); // normal edit 
 console.log('edited task1: ', task1);
+
 task1.toggleStatus();
-console.log('completed status task1: ', task1);
-task3.toggleStatus();
-console.log('completed status task3: ', task3);
+console.log('completed status task1: ', task1); // status "completed"
+
+task3.edit('Prepare the report!!!', 'Financial report for the month!!!'); // skip edit without confirm
+console.log('no edited task3: ', task3);
+task3.confirm = true;
+task3.edit('Prepare the report???', 'Financial report for the month???'); // normal edit with confirm
+console.log('edited task3: ', task3);
 
 console.log('Search by item title "the report": ', todoList.search('the report'));
 console.log('Search by item content "Bread": ', todoList.search('Bread'));
 console.log('Stats: ', todoList.getStats());
 console.log('Sort by status: ', todoList.sortByStatus());
 
-todoList.remove(task2.id);
-console.log('todoList: ', todoList);
+todoList.remove(task2.id); // normal remove
+console.log('All items after remove item 2:', todoList.getAll().map(item => item.getInfo())); // 3 items
+todoList.remove(task4.id); // skip remove without confirm
+console.log('All items (remove item 4 skipped):', todoList.getAll().map(item => item.getInfo())); // 3 items
+task4.confirm = true;
+todoList.remove(task4.id); // normal remove without confirm
+console.log('All items after remove item 4:', todoList.getAll().map(item => item.getInfo())); // 2 items
+
+console.log('todoList: ', todoList); // 2 items
 
 console.log('All items:', todoList.getAll().map(item => item.getInfo()));
