@@ -162,24 +162,28 @@ todoList.add(task4);
 console.log('todoList: ', todoList); // 4 items
 
 task1.edit('Buy products', 'Bread, apples'); // normal edit 
-console.log('edited task1: ', task1);
+console.log('edited task1: ', task1.content);
 
 task1.toggleStatus();
-console.log('completed status task1: ', task1); // status "completed"
+console.log('completed status task1: ', task1.status); // status "completed"
 
 task3.edit('Prepare the report!!!', 'Financial report for the month!!!'); // skip edit without confirm
-console.log('no edited task3: ', task3);
+console.log('no edited task3: ', task3.content);
 task3.confirm = true;
 task3.edit('Prepare the report???', 'Financial report for the month???'); // normal edit with confirm
-console.log('edited task3: ', task3);
+console.log('edited task3: ', task3.content);
 
 console.log('Search by item title "the report": ', todoList.search('the report'));
 console.log('Search by item content "Bread": ', todoList.search('Bread'));
 console.log('Stats: ', todoList.getStats());
 console.log('Sort by status: ', todoList.sortByStatus());
 
+todoList.edit(task2.id, 'Do home work!!!', 'Vrode 4to-to polu4ilosb'); // normal edit with on ToDoList
+console.log('edited task2: ', task2.content);
+
 todoList.remove(task2.id); // normal remove
 console.log('All items after remove item 2:', todoList.getAll().map(item => item.getInfo())); // 3 items
+
 todoList.remove(task4.id); // skip remove without confirm
 console.log('All items (remove item 4 skipped):', todoList.getAll().map(item => item.getInfo())); // 3 items
 task4.confirm = true;
