@@ -67,9 +67,6 @@ var ConfirmedTodoItem = /** @class */ (function (_super) {
             _super.prototype.edit.call(this, title, content);
         }
     };
-    ConfirmedTodoItem.prototype.canBeEdited = function () {
-        return this.isConfirmed();
-    };
     ConfirmedTodoItem.prototype.canBeDeleted = function () {
         return this.isConfirmed();
     };
@@ -86,9 +83,6 @@ var TodoList = /** @class */ (function () {
         var index = this.items.findIndex(function (item) { return item.id === id; });
         if (index !== -1) {
             var item = this.items[index];
-            // if (item instanceof ConfirmedTodoItem && !item.canBeEdited()) {
-            //   return;
-            // }
             if (item instanceof TodoItem) {
                 item.edit(title, content);
             }
