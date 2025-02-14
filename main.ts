@@ -7,6 +7,7 @@ interface ITodoItem {
   readonly createdAt: Date;
   updatedAt: Date;
   status: TodoStatus;
+  edit(title: string, content: string): void;
   getInfo(): string;
 }
 
@@ -71,10 +72,6 @@ class ConfirmedTodoItem extends TodoItem {
     }
   }
 
-  canBeEdited(): boolean {
-    return this.isConfirmed();
-  }
-
   canBeDeleted(): boolean {
     return this.isConfirmed();
   }
@@ -91,9 +88,7 @@ class TodoList {
     const index = this.items.findIndex(item => item.id === id);
     if (index !== -1) {
       const item = this.items[index];
-      if (item instanceof ConfirmedTodoItem && !item.canBeEdited()) {
-        return;
-      }
+
       if (item instanceof TodoItem) {
         item.edit(title, content);
       }

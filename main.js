@@ -86,9 +86,9 @@ var TodoList = /** @class */ (function () {
         var index = this.items.findIndex(function (item) { return item.id === id; });
         if (index !== -1) {
             var item = this.items[index];
-            if (item instanceof ConfirmedTodoItem && !item.canBeEdited()) {
-                return;
-            }
+            // if (item instanceof ConfirmedTodoItem && !item.canBeEdited()) {
+            //   return;
+            // }
             if (item instanceof TodoItem) {
                 item.edit(title, content);
             }
